@@ -10,9 +10,6 @@ def median(a):
 
 def apply_filter(filter_class,img,gray):
 
-	if gray == "True":
-		return apply_filter_for_gray_image(filter_class,img) 
-
 	out_img = img.copy()
 
 	if filter_class == "mean-filter":
@@ -24,8 +21,12 @@ def apply_filter(filter_class,img,gray):
 		filter_size = int(input())
 
 		x = (int)(filter_size/2)
+		n = filter_size * filter_size
 		#print(img.shape)
-		pad_img = np.pad(img,((x,x),(x,x),(0,0)), mode='constant')
+		if gray == "False":
+			pad_img = np.pad(img,((x,x),(x,x),(0,0)), mode='constant')
+		else:
+			pad_img = np.pad(img,((x,x),(x,x)), mode='constant')
 		#print(pad_img)
 		#print(pad_img.shape)
 		r = pad_img.shape[0]
@@ -34,62 +35,75 @@ def apply_filter(filter_class,img,gray):
 		if filter_type == 1:
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bsum,gsum,rsum = 0,0,0
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bsum = bsum + pad_img.item(i+k,j+l,0)
-							gsum = gsum + pad_img.item(i+k,j+l,1) 
-							rsum = rsum + pad_img.item(i+k,j+l,2)
-					n = filter_size * filter_size
-					bavg = bsum/n
-					gavg = gsum/n
-					ravg = rsum/n
-					out_img.itemset((i-x,j-x,0),bavg)
-					out_img.itemset((i-x,j-x,1),gavg)  
-					out_img.itemset((i-x,j-x,2),ravg)
+					if gray == "False":
+						for t in range(0,3):
+							Sum = 0
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									Sum = Sum + pad_img.item(i+k,j+l,t)
 
+							Avg = float(Sum/n)
+							out_img.itemset((i-x,j-x,t),Avg)
+
+					else:
+						Sum = 0
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								Sum = Sum + pad_img.item(i+k,j+l)
+
+						Avg = float(Sum/n)
+						out_img.itemset((i-x,j-x),Avg)
+					
 			filter_ = "Arithmetic_mean_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
 		elif filter_type == 2:
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bmul,gmul,rmul = 1,1,1
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bmul = bmul * pad_img.item(i+k,j+l,0)
-							gmul = gmul * pad_img.item(i+k,j+l,1) 
-							rmul = rmul * pad_img.item(i+k,j+l,2)
-					n = filter_size * filter_size
-					bgeo = bmul**(1.0/(float(n)))
-					ggeo = gmul**(1.0/(float(n)))
-					rgeo = rmul**(1.0/(float(n)))
-					out_img.itemset((i-x,j-x,0),bgeo)
-					out_img.itemset((i-x,j-x,1),ggeo)  
-					out_img.itemset((i-x,j-x,2),rgeo)
+					if gray == "False":
+						for t in range(0,3):
+							Mul = 1
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									Mul = Mul * pad_img.item(i+k,j+l,t)
+
+							Geo = Mul**(1.0/(float(n)))
+							out_img.itemset((i-x,j-x,t),Geo)
+					else:
+						Mul = 1
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								Mul = Mul * pad_img.item(i+k,j+l)
+
+						Geo = Mul**(1.0/(float(n)))
+						out_img.itemset((i-x,j-x),Geo)
+							
 			filter_ = "Geometic_mean_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
 		elif filter_type == 3:
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bsum,gsum,rsum = 0.00000000000001,0.00000000000001,0.00000000000001
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bs = 0.0 if pad_img.item(i+k,j+l,0) == 0 else 1/float(pad_img.item(i+k,j+l,0))
-							gs = 0.0 if pad_img.item(i+k,j+l,1) == 0 else 1/float(pad_img.item(i+k,j+l,1))
-							rs = 0.0 if pad_img.item(i+k,j+l,2) == 0 else 1/float(pad_img.item(i+k,j+l,2))
-							bsum = bsum + bs
-							gsum = gsum + gs
-							rsum = rsum + rs
-							#print(bsum,gsum,rsum)
-					n = filter_size * filter_size
-					bHar = float(n)/bsum
-					gHar = float(n)/gsum
-					rHar = float(n)/rsum
-					out_img.itemset((i-x,j-x,0),bHar)
-					out_img.itemset((i-x,j-x,1),gHar)  
-					out_img.itemset((i-x,j-x,2),rHar)
+					if gray == "False":
+						for t in range(0,3):
+							Isum = 0.00000000000001
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									Is = 0.0 if pad_img.item(i+k,j+l,t) == 0 else 1/float(pad_img.item(i+k,j+l,t))
+									Isum = Isum + Is
+									
+							Har = float(n/Isum)
+							out_img.itemset((i-x,j-x,t),Har)
+					else:
+						Isum = 0.00000000000001
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								Is = 0.0 if pad_img.item(i+k,j+l) == 0 else 1/float(pad_img.item(i+k,j+l))
+								Isum = Isum + Is
+									
+						Har = float(n/Isum)
+						out_img.itemset((i-x,j-x),Har)
+											
 			filter_ = "Harmonic_mean_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
@@ -98,26 +112,28 @@ def apply_filter(filter_class,img,gray):
 			Q = int(input())
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bnum,gnum,rnum = 0,0,0
-					bden,gden,rden = 0.00000000000001,0.00000000000001,0.00000000000001
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bval = 0 if (pad_img.item(i+k,j+l,0)) == 0 else (pad_img.item(i+k,j+l,0)**(Q))
-							gval = 0 if (pad_img.item(i+k,j+l,1)) == 0 else (pad_img.item(i+k,j+l,1)**(Q))
-							rval = 0 if (pad_img.item(i+k,j+l,2)) == 0 else (pad_img.item(i+k,j+l,2)**(Q))
-							bnum = bnum + (bval*pad_img.item(i+k,j+l,0))
-							bden = bden + (bval)
-							gnum = gnum + (gval*pad_img.item(i+k,j+l,1))
-							gden = gden + (gval)
-							rnum = rnum + (rval*pad_img.item(i+k,j+l,2))
-							rden = rden + (rval)
-							#print(bden,gden,rden)
-					bratio = bnum/bden
-					gratio = gnum/gden
-					rratio = rnum/rden
-					out_img.itemset((i-x,j-x,0),bratio)
-					out_img.itemset((i-x,j-x,1),gratio)  
-					out_img.itemset((i-x,j-x,2),rratio)
+					if gray == "False":
+						for t in range(0,3):
+							num = 0.0
+							den = 0.00000000000001
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									val = 0 if (pad_img.item(i+k,j+l,t)) == 0 else (pad_img.item(i+k,j+l,t)**(Q))
+									num = num + (val*pad_img.item(i+k,j+l,t))
+									den = den + (val)
+							ratio = float(num/den)
+							out_img.itemset((i-x,j-x,t),ratio)
+					else:
+						num = 0.0
+						den = 0.00000000000001
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								val = 0 if (pad_img.item(i+k,j+l)) == 0 else (pad_img.item(i+k,j+l)**(Q))
+								num = num + (val*pad_img.item(i+k,j+l))
+								den = den + (val)
+						ratio = float(num/den)
+						out_img.itemset((i-x,j-x),ratio)
+					
 			filter_ = "Contraharmonic_mean_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
@@ -130,8 +146,12 @@ def apply_filter(filter_class,img,gray):
 		filter_size = int(input())
 
 		x = (int)(filter_size/2)
+		n = filter_size * filter_size
 		#print(img.shape)
-		pad_img = np.pad(img,((x,x),(x,x),(0,0)), mode='constant')
+		if gray == "False":
+			pad_img = np.pad(img,((x,x),(x,x),(0,0)), mode='constant')
+		else:
+			pad_img = np.pad(img,((x,x),(x,x)), mode='constant')
 		#print(pad_img)
 		#print(pad_img.shape)
 		r = pad_img.shape[0]
@@ -141,100 +161,124 @@ def apply_filter(filter_class,img,gray):
 		if filter_type == 1:
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bList,gList,rList = [],[],[]
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bList.append(pad_img.item(i+k,j+l,0))
-							gList.append(pad_img.item(i+k,j+l,1)) 
-							rList.append(pad_img.item(i+k,j+l,2))
+					if gray == "False":
+						for t in range(0,3):
+							List = []
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									List.append(pad_img.item(i+k,j+l,t))
 
-					out_img.itemset((i-x,j-x,0),median(bList))
-					out_img.itemset((i-x,j-x,1),median(gList))  
-					out_img.itemset((i-x,j-x,2),median(rList))
+							out_img.itemset((i-x,j-x,t),median(List))
+					else:
+						List = []
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								List.append(pad_img.item(i+k,j+l))
+
+						out_img.itemset((i-x,j-x),median(List))
+				
 			filter_ = "Median_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
 		elif filter_type == 2:
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bMax,gMax,rMax = 0,0,0
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bMax = pad_img.item(i+k,j+l,0) if (pad_img.item(i+k,j+l,0)) > bMax else bMax 
-							gMax = pad_img.item(i+k,j+l,1) if (pad_img.item(i+k,j+l,1)) > gMax else gMax 
-							rMax = pad_img.item(i+k,j+l,2) if (pad_img.item(i+k,j+l,2)) > rMax else rMax
+					if gray == "False":
+						for t in range(0,3):
+							Max = 0
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									Max = pad_img.item(i+k,j+l,t) if (pad_img.item(i+k,j+l,t)) > Max else Max
 
-					out_img.itemset((i-x,j-x,0),bMax)
-					out_img.itemset((i-x,j-x,1),gMax)  
-					out_img.itemset((i-x,j-x,2),rMax)
+							out_img.itemset((i-x,j-x,t),Max)
+					else:
+						Max = 0
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								Max = pad_img.item(i+k,j+l) if (pad_img.item(i+k,j+l)) > Max else Max
+
+						out_img.itemset((i-x,j-x),Max)
+
 			filter_ = "Max_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
 		elif filter_type == 3:
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bMin,gMin,rMin = 255,255,255
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bMin = pad_img.item(i+k,j+l,0) if (pad_img.item(i+k,j+l,0)) < bMin else bMin 
-							gMin = pad_img.item(i+k,j+l,1) if (pad_img.item(i+k,j+l,1)) < gMin else gMin 
-							rMin = pad_img.item(i+k,j+l,2) if (pad_img.item(i+k,j+l,2)) < rMin else rMin
+					if gray == "False":
+						for t in range(0,3):
+							Min = 255
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									Min = pad_img.item(i+k,j+l,t) if (pad_img.item(i+k,j+l,t)) < Min else Min 
 
-					out_img.itemset((i-x,j-x,0),bMin)
-					out_img.itemset((i-x,j-x,1),gMin)  
-					out_img.itemset((i-x,j-x,2),rMin)
+							out_img.itemset((i-x,j-x,t),Min)
+					else:
+						Min = 255
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								Min = pad_img.item(i+k,j+l) if (pad_img.item(i+k,j+l)) < Min else Min 
+
+						out_img.itemset((i-x,j-x),Min)
+					
 			filter_ = "Min_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
 		elif filter_type == 4:
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bMax,gMax,rMax = 0,0,0
-					bMin,gMin,rMin = 255,255,255
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bMax = pad_img.item(i+k,j+l,0) if (pad_img.item(i+k,j+l,0)) > bMax else bMax 
-							gMax = pad_img.item(i+k,j+l,1) if (pad_img.item(i+k,j+l,1)) > gMax else gMax 
-							rMax = pad_img.item(i+k,j+l,2) if (pad_img.item(i+k,j+l,2)) > rMax else rMax
-							bMin = pad_img.item(i+k,j+l,0) if (pad_img.item(i+k,j+l,0)) < bMin else bMin 
-							gMin = pad_img.item(i+k,j+l,1) if (pad_img.item(i+k,j+l,1)) < gMin else gMin 
-							rMin = pad_img.item(i+k,j+l,2) if (pad_img.item(i+k,j+l,2)) < rMin else rMin
+					if gray == "False":
+						for t in range(0,3):
+							Max = 0
+							Min = 255
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									Max = pad_img.item(i+k,j+l,t) if (pad_img.item(i+k,j+l,t)) > Max else Max 
+									Min = pad_img.item(i+k,j+l,t) if (pad_img.item(i+k,j+l,t)) < Min else Min
 
-					out_img.itemset((i-x,j-x,0),(bMax+bMin)/2)
-					out_img.itemset((i-x,j-x,1),(gMax+gMin)/2)  
-					out_img.itemset((i-x,j-x,2),(rMax+rMin)/2)
+							out_img.itemset((i-x,j-x,t),(Max+Min)/2)
+					else:
+						Max = 0
+						Min = 255
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								Max = pad_img.item(i+k,j+l) if (pad_img.item(i+k,j+l)) > Max else Max 
+								Min = pad_img.item(i+k,j+l) if (pad_img.item(i+k,j+l)) < Min else Min
+
+						out_img.itemset((i-x,j-x),(Max+Min)/2)
+					
 			filter_ = "Midpoint_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
 		elif filter_type == 5:
 			for i in range(x,r-x):
 				for j in range(x,c-x):
-					bsum,gsum,rsum = 0,0,0
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							bsum = bsum + pad_img.item(i+k,j+l,0)
-							gsum = gsum + pad_img.item(i+k,j+l,1) 
-							rsum = rsum + pad_img.item(i+k,j+l,2)
-					n = filter_size * filter_size
-					d = random.randint(0,n-1)
-					bavg = bsum/(n-d)
-					gavg = gsum/(n-d)
-					ravg = rsum/(n-d)
-					out_img.itemset((i-x,j-x,0),bavg)
-					out_img.itemset((i-x,j-x,1),gavg)  
-					out_img.itemset((i-x,j-x,2),ravg)
+					if gray == "False":
+						for t in range(0,3):
+							Sum = 0
+							for k in range(-1*(x),filter_size-x):
+								for l in range(-1*(x),filter_size-x):
+									Sum = Sum + pad_img.item(i+k,j+l,t)
+							d = random.randint(0,n-1)
+							#d = 5
+							avg = float(Sum/(n-d))
+							out_img.itemset((i-x,j-x,t),avg)
+					else:
+						Sum = 0
+						for k in range(-1*(x),filter_size-x):
+							for l in range(-1*(x),filter_size-x):
+								Sum = Sum + pad_img.item(i+k,j+l)
+						d = random.randint(0,n-1)
+						#d = 5
+						avg = float(Sum/(n-d))
+						out_img.itemset((i-x,j-x),avg)
+					
 			filter_ = "Alphatrimmed_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
+	elif filter_class == "Adaptive-filter":
 
-
-def apply_filter_for_gray_image(filter_class,img):
-
-	out_img = img.copy()
-
-	if filter_class == "mean-filter":
-
-		print("select type of a mean filter: \n 1: Arithmetic Mean Filter \n 2. Geometric Mean Filter \n 3. Harmonic Mean Filter \n 4. Contraharmonic Mean Filter \n")
+		print("select type of a 'Adaptive-filter': \n 1.Local noise reduction filter \n")
 		filter_type = int(input())
 
 		print("Input Filter size(odd numbers) :\n")
@@ -242,142 +286,73 @@ def apply_filter_for_gray_image(filter_class,img):
 
 		x = (int)(filter_size/2)
 		#print(img.shape)
-		pad_img = np.pad(img,((x,x),(x,x)), mode='constant')
-		#print(pad_img)
-		#print(pad_img.shape)
+		if gray == "False":
+			pad_img = np.pad(img,((x,x),(x,x),(0,0)), mode='constant')
+			local_mean = np.zeros((img.shape[0],img.shape[1],img.shape[2]),dtype='float')
+			local_variance = np.zeros((img.shape[0],img.shape[1],img.shape[2]),dtype='float')
+		else:
+			pad_img = np.pad(img,((x,x),(x,x)), mode='constant')
+			local_mean = np.zeros((img.shape[0],img.shape[1]),dtype='float')
+			local_variance = np.zeros((img.shape[0],img.shape[1]),dtype='float')
+
 		r = pad_img.shape[0]
 		c = pad_img.shape[1]
 
-		if filter_type == 1:
+		if filter_type == 1: 
+			n = filter_size * filter_size
 			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gsum = 0
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							gsum = gsum + pad_img.item(i+k,j+l)
-					n = filter_size * filter_size
-					gavg = gsum/n
-					out_img.itemset((i-x,j-x),gavg)
-			filter_ = "Arithmetic_mean_"+str(filter_size)+"*"+str(filter_size)
-			return out_img,filter_
-		elif filter_type == 2:
-			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gmul = 1
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							gmul = gmul * pad_img.item(i+k,j+l)
-					n = filter_size * filter_size
-					ggeo = gmul**(1.0/(float(n)))
-					out_img.itemset((i-x,j-x),ggeo) 
-			filter_ = "Geometic_mean_"+str(filter_size)+"*"+str(filter_size)
-			return out_img,filter_
+					for j in range(x,c-x):
+						if gray == "False":
+							for t in range(0,3):
+								sr = i-x
+								er = i+filter_size-x
+								sc = j-x
+								ec = j+filter_size-x
 
-		elif filter_type == 3:
-			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gsum = 0.00000000000001
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							gs = 0.0 if pad_img.item(i+k,j+l) == 0 else 1/float(pad_img.item(i+k,j+l))
-							gsum = gsum + gs
-					n = filter_size * filter_size
-					gHar = float(n)/gsum
-					out_img.itemset((i-x,j-x),gHar)
-			filter_ = "Harmonic_mean_"+str(filter_size)+"*"+str(filter_size)
-			return out_img,filter_
+								tmp = pad_img[sr:er,sc:ec,t]
 
-		elif filter_type == 4:
-			print("Input 'Q' :")
-			Q = int(input())
-			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gnum = 0
-					gden = 0.00000000000001
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							gval = 0 if (pad_img.item(i+k,j+l)) == 0 else (pad_img.item(i+k,j+l)**(Q))
-							gnum = gnum + (gval*pad_img.item(i+k,j+l))
-							gden = gden + (gval)
-					gratio = gnum/gden
-					out_img.itemset((i-x,j-x),gratio)
-			filter_ = "Contraharmonic_mean_"+str(filter_size)+"*"+str(filter_size)
-			return out_img,filter_ 
+								mean = np.mean(tmp)
+								var = np.var(tmp)
 
-	elif filter_class == "order-statistics-filter":
+								local_mean.itemset((i-x,j-x,t),mean)
+								local_variance.itemset((i-x,j-x,t),var)
+						else:
+							sr = i-x
+							er = i+filter_size-x
+							sc = j-x
+							ec = j+filter_size-x
 
-		print("select type of a 'order-statistics-filter': \n 1. Median Filter \n 2. Max Filter \n 3. Min Filter \n 4.Midpoint Filter \n 5. Alpha-Trimmed Mean Filter \n")
-		filter_type = int(input())
+							tmp = pad_img[sr:er,sc:ec]
 
-		print("Input Filter size(odd numbers) :\n")
-		filter_size = int(input())
+							mean = np.mean(tmp)
+							var = np.var(tmp)
 
-		x = (int)(filter_size/2)
-		#print(img.shape)
-		pad_img = np.pad(img,((x,x),(x,x)), mode='constant')
-		#print(pad_img)
-		#print(pad_img.shape)
-		r = pad_img.shape[0]
-		c = pad_img.shape[1]
+							local_mean.itemset((i-x,j-x),mean)
+							local_variance.itemset((i-x,j-x),var)
 
-		if filter_type == 1:
-			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gList = []
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							gList.append(pad_img.item(i+k,j+l))
+			r = img.shape[0]
+			c = img.shape[1]
 
-					out_img.itemset((i-x,j-x),median(gList))
-			filter_ = "Median_"+str(filter_size)+"*"+str(filter_size)
+			if gray == "False":
+				for t in range(0,3):
+					avg_noise_var = np.mean(local_variance[:,:,t])
+					for i in range(0,r-1):
+						for j in range(0,c-1):
+							if avg_noise_var > local_variance[i,j,t]:
+								local_variance.itemset((i,j,t), avg_noise_var)
+					avg_local_var = np.mean(local_variance[:,:,t])
+					out_img[:,:,t] = img[:,:,t] - (float(avg_noise_var/avg_local_var)*(img[:,:,t] - local_mean[:,:,t]))
+			else:
+				avg_noise_var = np.mean(local_variance[:,:])
+				for i in range(0,r-1):
+					for j in range(0,c-1):
+						if avg_noise_var > local_variance[i,j]:
+							local_variance.itemset((i,j), avg_noise_var)
+				avg_local_var = np.mean(local_variance[:,:])
+				out_img[:,:] = img[:,:] - (float(avg_noise_var/avg_local_var)*(img[:,:] - local_mean[:,:]))
+
+			filter_ = "Adaptive_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
 
-		elif filter_type == 2:
-			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gMax = 0
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							gMax = pad_img.item(i+k,j+l) if (pad_img.item(i+k,j+l)) > gMax else gMax 
-					out_img.itemset((i-x,j-x),gMax)
-			filter_ = "Max_"+str(filter_size)+"*"+str(filter_size)
-			return out_img,filter_
 
-		elif filter_type == 3:
-			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gMin = 255
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x): 
-							gMin = pad_img.item(i+k,j+l) if (pad_img.item(i+k,j+l)) < gMin else gMin 
-					out_img.itemset((i-x,j-x),gMin)
-			filter_ = "Min_"+str(filter_size)+"*"+str(filter_size)
-			return out_img,filter_
-
-		elif filter_type == 4:
-			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gMax = 0
-					gMin = 255
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							gMax = pad_img.item(i+k,j+l) if (pad_img.item(i+k,j+l)) > gMax else gMax 
-							gMin = pad_img.item(i+k,j+l) if (pad_img.item(i+k,j+l)) < gMin else gMin
-
-					out_img.itemset((i-x,j-x),(gMax+gMin)/2)
-			filter_ = "Midpoint_"+str(filter_size)+"*"+str(filter_size)
-			return out_img,filter_
-
-		elif filter_type == 5:
-			for i in range(x,r-x):
-				for j in range(x,c-x):
-					gsum = 0
-					for k in range(-1*(x),filter_size-x):
-						for l in range(-1*(x),filter_size-x):
-							gsum = gsum + pad_img.item(i+k,j+l)
-					n = filter_size * filter_size
-					d = random.randint(0,n-1)
-					gavg = gsum/(n-d)
-					out_img.itemset((i-x,j-x),gavg)
-			filter_ = "Alphatrimmed_"+str(filter_size)+"*"+str(filter_size)
-			return out_img,filter_
+		

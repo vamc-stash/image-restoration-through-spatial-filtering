@@ -53,35 +53,25 @@ def degrade(degrade_type,img,gray):
 	if gray == "False":
 		for i in range(x,h-x):
 			for j in range(x,w-x):
-				bSum,gSum,rSum = 0,0,0
-				for k in range(-1*(x),ksize-x):
-					for l in range(-1*(x),ksize-x):
-						b = img.item(i+k,j+l,0)
-						g = img.item(i+k,j+l,1)
-						r = img.item(i+k,j+l,2)
-						p = arr[k+x,l+x]
-						bSum = bSum + (b*p)
-						gSum = gSum + (g*p)
-						rSum = rSum + (r*p)
-
-				bs = bSum
-				gs = gSum
-				rs = rSum
-				out_img.itemset((i,j,0),bs)
-				out_img.itemset((i,j,1),gs)
-				out_img.itemset((i,j,2),rs)
+				for t in range(0,3):
+					Sum = 0
+					for k in range(-1*(x),ksize-x):
+						for l in range(-1*(x),ksize-x):
+							a = img.item(i+k,j+l,t)
+							p = arr[k+x,l+x]
+							Sum = Sum + (a*p)
+					out_img.itemset((i,j,t),Sum)
+				
 	else:
 		for i in range(x,h-x):
 			for j in range(x,w-x):
 				Sum = 0
 				for k in range(-1*(x),ksize-x):
 					for l in range(-1*(x),ksize-x):
-						g = img.item(i+k,j+l)
+						a = img.item(i+k,j+l)
 						p = arr[k+x,l+x]
-						Sum = Sum + (g*p)
+						Sum = Sum + (a*p)
 
-				gs = Sum
-				out_img.itemset((i,j),gs)
-
+				out_img.itemset((i,j),Sum)
 
 	return out_img,str(ksize)

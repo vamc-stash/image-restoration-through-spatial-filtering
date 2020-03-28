@@ -11,10 +11,11 @@ import filename_shortcuts as fsc
 
 degrade_models = ["optical-blur" , "gaussian-blur" , "motion-blur"]
 noise_models = ["salt-and-pepper-noise" , "salt-noise" , "pepper-noise" , "gaussian-noise" , "uniform-noise" , "exponential-noise"]
-spatial_filters = ["mean-filter" , "order-statistics-filter" ]
+spatial_filters = ["mean-filter" , "order-statistics-filter" ,"Adaptive-filter"]
 
 #mean filters : 1. Arithmetic Mean Filter  2. Geometric Mean Filter 3. Harmonic Mean Filter 4. Contraharmonic Mean Filter 
 #order-statistics-filters : 1. Median Filter 2. Max Filter 3. Min Filter 4.Midpoint Filter 5. Alpha-Trimmed Mean Filter
+#Adaptive-filter : 1. Local noise reduction Filter
 
 if __name__ == '__main__':
 
@@ -25,15 +26,17 @@ if __name__ == '__main__':
 	#load-image  ------- f(x,y)
 	img = cv2.imread(image_path)
 
-
 	print("Do you want to convert Image to Gray Scale? [y/n]")
 	opt = str(input())
 	gray = "False"
-	if opt =="n" and len(img.shape)<3:
+	if (opt == "n" or opt == "y") and len(img.shape)<3:
 		gray = "True"
 	elif opt == "y":
 		img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 		gray = "True"
+	else:
+		print("Incorrect input")
+		sys.exit()
 
 	img = cv2.resize(img,(250,250),interpolation = cv2.INTER_AREA)
 	cv2.imshow("Test Image :",img)
