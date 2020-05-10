@@ -29,14 +29,12 @@ if __name__ == '__main__':
 	print("Do you want to convert Image to Gray Scale? [y/n]")
 	opt = str(input())
 	gray = "False"
+	print(img.shape)
 	if (opt == "n" or opt == "y") and len(img.shape)<3:
 		gray = "True"
 	elif opt == "y":
 		img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 		gray = "True"
-	else:
-		print("Incorrect input")
-		sys.exit()
 
 	img = cv2.resize(img,(250,250),interpolation = cv2.INTER_AREA)
 	cv2.imshow("Test Image :",img)

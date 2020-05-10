@@ -251,25 +251,46 @@ def apply_filter(filter_class,img,gray):
 			return out_img,filter_
 
 		elif filter_type == 5:
+			d = random.randint(0,n-1)
 			for i in range(x,r-x):
 				for j in range(x,c-x):
 					if gray == "False":
 						for t in range(0,3):
 							Sum = 0
+							tmp = []
 							for k in range(-1*(x),filter_size-x):
 								for l in range(-1*(x),filter_size-x):
-									Sum = Sum + pad_img.item(i+k,j+l,t)
-							d = random.randint(0,n-1)
-							#d = 5
+									tmp.append(pad_img.item(i+k,j+l,t))
+							arr = np.sort(np.array(tmp))
+							if d%2 == 1:
+								s = np.floor((d/2)+1)
+								e = arr.size-np.floor((d/2))
+								for i in range(int(s),int(e)):
+									Sum += arr[i]
+							else:
+								s = np.floor(d/2)
+								e = arr.size-np.floor((d/2))
+								for i in range(int(s),int(e)):
+									Sum += arr[i]
 							avg = float(Sum/(n-d))
 							out_img.itemset((i-x,j-x,t),avg)
 					else:
+						tmp = []
 						Sum = 0
 						for k in range(-1*(x),filter_size-x):
 							for l in range(-1*(x),filter_size-x):
-								Sum = Sum + pad_img.item(i+k,j+l)
-						d = random.randint(0,n-1)
-						#d = 5
+								tmp.append(pad_img.item(i+k,j+l))
+						arr = np.sort(np.array(tmp))
+						if d%2 == 1:
+							s = np.floor((d/2)+1)
+							e = arr.size-np.floor((d/2))
+							for i in range(int(s),int(e)):
+								Sum += arr[i]
+						else:
+							s = np.floor(d/2)
+							e = arr.size-np.floor((d/2))
+							for i in range(int(s),int(e)):
+								Sum += arr[i]
 						avg = float(Sum/(n-d))
 						out_img.itemset((i-x,j-x),avg)
 					
@@ -341,7 +362,10 @@ def apply_filter(filter_class,img,gray):
 							if avg_noise_var > local_variance[i,j,t]:
 								local_variance.itemset((i,j,t), avg_noise_var)
 					avg_local_var = np.mean(local_variance[:,:,t])
-					out_img[:,:,t] = img[:,:,t] - (float(avg_noise_var/avg_local_var)*(img[:,:,t] - local_mean[:,:,t]))
+					ratio_ = (float(avg_noise_var/avg_local_var))
+					if ratio_ > 1.0:
+						ratio_ = 1.0
+					out_img[:,:,t] = img[:,:,t] - ((ratio_)*(img[:,:,t] - local_mean[:,:,t]))
 			else:
 				avg_noise_var = np.mean(local_variance[:,:])
 				for i in range(0,r-1):
@@ -349,7 +373,10 @@ def apply_filter(filter_class,img,gray):
 						if avg_noise_var > local_variance[i,j]:
 							local_variance.itemset((i,j), avg_noise_var)
 				avg_local_var = np.mean(local_variance[:,:])
-				out_img[:,:] = img[:,:] - (float(avg_noise_var/avg_local_var)*(img[:,:] - local_mean[:,:]))
+				ratio_ = (float(avg_noise_var/avg_local_var))
+				if ratio_ > 1.0:
+						ratio_ = 1.0
+				out_img[:,:] = img[:,:] - ((ratio_)*(img[:,:] - local_mean[:,:]))
 
 			filter_ = "Adaptive_"+str(filter_size)+"*"+str(filter_size)
 			return out_img,filter_
